@@ -1,0 +1,92 @@
+From 444f634f38155fa84224eaa260753811455fee71 Mon Sep 17 00:00:00 2001
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Date: Thu, 23 Jul 2009 10:03:12 -0600
+Subject: [PATCH 5/5] Update function prototypes to match libibverbs enum type change
+
+Change enum bit flags to int to match libibverbs prototype changes.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ src/mlx4.h  |    8 ++++----
+ src/verbs.c |    8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/src/mlx4.h b/src/mlx4.h
+index 0c658cf..4445998 100644
+--- a/src/mlx4.h
++++ b/src/mlx4.h
+@@ -302,7 +302,7 @@ struct ibv_pd *mlx4_alloc_pd(struct ibv_context *context);
+ int mlx4_free_pd(struct ibv_pd *pd);
+ 
+ struct ibv_mr *mlx4_reg_mr(struct ibv_pd *pd, void *addr,
+-			    size_t length, enum ibv_access_flags access);
++			    size_t length, int access);
+ int mlx4_dereg_mr(struct ibv_mr *mr);
+ 
+ struct ibv_cq *mlx4_create_cq(struct ibv_context *context, int cqe,
+@@ -323,7 +323,7 @@ struct ibv_srq *mlx4_create_srq(struct ibv_pd *pd,
+ 				 struct ibv_srq_init_attr *attr);
+ int mlx4_modify_srq(struct ibv_srq *srq,
+ 		     struct ibv_srq_attr *attr,
+-		     enum ibv_srq_attr_mask mask);
++		     int mask);
+ int mlx4_query_srq(struct ibv_srq *srq,
+ 			   struct ibv_srq_attr *attr);
+ int mlx4_destroy_srq(struct ibv_srq *srq);
+@@ -336,10 +336,10 @@ int mlx4_post_srq_recv(struct ibv_srq *ibsrq,
+ 
+ struct ibv_qp *mlx4_create_qp(struct ibv_pd *pd, struct ibv_qp_init_attr *attr);
+ int mlx4_query_qp(struct ibv_qp *qp, struct ibv_qp_attr *attr,
+-		   enum ibv_qp_attr_mask attr_mask,
++		   int attr_mask,
+ 		   struct ibv_qp_init_attr *init_attr);
+ int mlx4_modify_qp(struct ibv_qp *qp, struct ibv_qp_attr *attr,
+-		    enum ibv_qp_attr_mask attr_mask);
++		    int attr_mask);
+ int mlx4_destroy_qp(struct ibv_qp *qp);
+ void mlx4_init_qp_indices(struct mlx4_qp *qp);
+ void mlx4_qp_init_sq_ownership(struct mlx4_qp *qp);
+diff --git a/src/verbs.c b/src/verbs.c
+index 2c19d93..1ac1362 100644
+--- a/src/verbs.c
++++ b/src/verbs.c
+@@ -108,7 +108,7 @@ int mlx4_free_pd(struct ibv_pd *pd)
+ }
+ 
+ struct ibv_mr *mlx4_reg_mr(struct ibv_pd *pd, void *addr, size_t length,
+-			   enum ibv_access_flags access)
++			   int access)
+ {
+ 	struct ibv_mr *mr;
+ 	struct ibv_reg_mr cmd;
+@@ -353,7 +353,7 @@ err:
+ 
+ int mlx4_modify_srq(struct ibv_srq *srq,
+ 		     struct ibv_srq_attr *attr,
+-		     enum ibv_srq_attr_mask attr_mask)
++		     int attr_mask)
+ {
+ 	struct ibv_modify_srq cmd;
+ 
+@@ -497,7 +497,7 @@ err:
+ }
+ 
+ int mlx4_query_qp(struct ibv_qp *ibqp, struct ibv_qp_attr *attr,
+-		   enum ibv_qp_attr_mask attr_mask,
++		   int attr_mask,
+ 		   struct ibv_qp_init_attr *init_attr)
+ {
+ 	struct ibv_query_qp cmd;
+@@ -518,7 +518,7 @@ int mlx4_query_qp(struct ibv_qp *ibqp, struct ibv_qp_attr *attr,
+ }
+ 
+ int mlx4_modify_qp(struct ibv_qp *qp, struct ibv_qp_attr *attr,
+-		    enum ibv_qp_attr_mask attr_mask)
++		    int attr_mask)
+ {
+ 	struct ibv_modify_qp cmd;
+ 	int ret;
+-- 
+1.6.5.2
+

@@ -1,0 +1,29 @@
+From ec9d1ca2fa87984d0656e811b03fa60d44459930 Mon Sep 17 00:00:00 2001
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+Date: Mon, 3 Aug 2009 13:47:43 -0700
+Subject: [PATCH 4/5] Fix version in taball filename in RPM spec file
+
+Forgot to bump the tarball filename when releasing libmlx4-1.0.1.
+
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ libmlx4.spec.in |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/libmlx4.spec.in b/libmlx4.spec.in
+index 869032f..a98ca68 100644
+--- a/libmlx4.spec.in
++++ b/libmlx4.spec.in
+@@ -6,7 +6,7 @@ Summary: Mellanox ConnectX InfiniBand HCA Userspace Driver
+ Group: System Environment/Libraries
+ License: GPLv2 or BSD
+ Url: http://openfabrics.org/
+-Source: http://openfabrics.org/downloads/mlx4/libmlx4-1.0.tar.gz
++Source: http://openfabrics.org/downloads/mlx4/libmlx4-1.0.1.tar.gz
+ BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+ 
+ BuildRequires: libibverbs-devel >= 1.1-0.1.rc2
+-- 
+1.6.5.2
+

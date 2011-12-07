@@ -1,0 +1,69 @@
+From 87750d1db4bc73933e92d862ff73d10d06ff4f5d Mon Sep 17 00:00:00 2001
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+Date: Wed, 29 Jul 2009 11:45:55 -0700
+Subject: [PATCH 2/5] Use mmap(MAP_ANONYMOUS) to allocate queue buffers
+
+Internal buffers for QPs, CQs, SRQs etc. are allocated with
+mlx4_alloc_buf(), which rounds the buffer's size to the page size and
+then allocates page aligned memory using posix_memalign().
+
+However, this allocation is quite wasteful on architectures using 64K
+pages (ia64 for example) because we then hit glibc's MMAP_THRESHOLD
+malloc parameter and chunks are allocated using mmap.  Thus we end up
+allocating:
+
+  (requested size rounded to the page size) + (page size) + (malloc overhead)
+
+rounded internally to the page size.
+
+So for example, if we request a buffer of page_size bytes, we end up
+consuming 3 pages.  In short, for each buffer we allocate, there is an
+overhead of 2 pages.  This is quite visible on large clusters where
+the number of QPs can reach several thousands.
+
+This patch replaces the call to posix_memalign() in mlx4_alloc_buf()
+with a direct call to mmap().
+
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ src/buf.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/src/buf.c b/src/buf.c
+index 0e5f9b6..bbaff12 100644
+--- a/src/buf.c
++++ b/src/buf.c
+@@ -61,16 +61,15 @@ int mlx4_alloc_buf(struct mlx4_buf *buf, size_t size, int page_size)
+ {
+ 	int ret;
+ 
+-	ret = posix_memalign(&buf->buf, page_size, align(size, page_size));
+-	if (ret)
+-		return ret;
++	buf->length = align(size, page_size);
++	buf->buf = mmap(NULL, buf->length, PROT_READ | PROT_WRITE,
++			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++	if (buf->buf == MAP_FAILED)
++		return errno;
+ 
+ 	ret = ibv_dontfork_range(buf->buf, size);
+ 	if (ret)
+-		free(buf->buf);
+-
+-	if (!ret)
+-		buf->length = size;
++		munmap(buf->buf, buf->length);
+ 
+ 	return ret;
+ }
+@@ -78,5 +77,5 @@ int mlx4_alloc_buf(struct mlx4_buf *buf, size_t size, int page_size)
+ void mlx4_free_buf(struct mlx4_buf *buf)
+ {
+ 	ibv_dofork_range(buf->buf, buf->length);
+-	free(buf->buf);
++	munmap(buf->buf, buf->length);
+ }
+-- 
+1.6.5.2
+

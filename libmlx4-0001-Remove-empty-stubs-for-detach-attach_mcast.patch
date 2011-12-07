@@ -1,0 +1,64 @@
+From 09f8dcd3769a52eebceeae15e2c5a844e6ee4586 Mon Sep 17 00:00:00 2001
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Date: Mon, 20 Jul 2009 16:37:24 -0600
+Subject: [PATCH 1/5] Remove empty stubs for detach/attach_mcast
+
+Just use ibv_cmd_* directly.  Simplifies the code and fixes const
+correctness warnings due to changes in libibverbs.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ src/mlx4.c  |    4 ++--
+ src/mlx4.h  |    2 --
+ src/verbs.c |   10 ----------
+ 3 files changed, 2 insertions(+), 14 deletions(-)
+
+diff --git a/src/mlx4.c b/src/mlx4.c
+index 34ece39..1295c53 100644
+--- a/src/mlx4.c
++++ b/src/mlx4.c
+@@ -94,8 +94,8 @@ static struct ibv_context_ops mlx4_ctx_ops = {
+ 	.post_recv     = mlx4_post_recv,
+ 	.create_ah     = mlx4_create_ah,
+ 	.destroy_ah    = mlx4_destroy_ah,
+-	.attach_mcast  = mlx4_attach_mcast,
+-	.detach_mcast  = mlx4_detach_mcast
++	.attach_mcast  = ibv_cmd_attach_mcast,
++	.detach_mcast  = ibv_cmd_detach_mcast
+ };
+ 
+ static struct ibv_context *mlx4_alloc_context(struct ibv_device *ibdev, int cmd_fd)
+diff --git a/src/mlx4.h b/src/mlx4.h
+index 827a201..0c658cf 100644
+--- a/src/mlx4.h
++++ b/src/mlx4.h
+@@ -361,7 +361,5 @@ int mlx4_destroy_ah(struct ibv_ah *ah);
+ int mlx4_alloc_av(struct mlx4_pd *pd, struct ibv_ah_attr *attr,
+ 		   struct mlx4_ah *ah);
+ void mlx4_free_av(struct mlx4_ah *ah);
+-int mlx4_attach_mcast(struct ibv_qp *qp, union ibv_gid *gid, uint16_t lid);
+-int mlx4_detach_mcast(struct ibv_qp *qp, union ibv_gid *gid, uint16_t lid);
+ 
+ #endif /* MLX4_H */
+diff --git a/src/verbs.c b/src/verbs.c
+index cc179a0..2c19d93 100644
+--- a/src/verbs.c
++++ b/src/verbs.c
+@@ -651,13 +651,3 @@ int mlx4_destroy_ah(struct ibv_ah *ah)
+ 
+ 	return 0;
+ }
+-
+-int mlx4_attach_mcast(struct ibv_qp *qp, union ibv_gid *gid, uint16_t lid)
+-{
+-	return ibv_cmd_attach_mcast(qp, gid, lid);
+-}
+-
+-int mlx4_detach_mcast(struct ibv_qp *qp, union ibv_gid *gid, uint16_t lid)
+-{
+-	return ibv_cmd_detach_mcast(qp, gid, lid);
+-}
+-- 
+1.6.5.2
+

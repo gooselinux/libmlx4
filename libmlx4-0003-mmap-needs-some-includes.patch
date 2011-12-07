@@ -1,0 +1,31 @@
+From cf744a2ef8343e5f74f9c59de3990e3e46ec301c Mon Sep 17 00:00:00 2001
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+Date: Mon, 3 Aug 2009 15:40:01 +0200
+Subject: [PATCH 3/5] mmap() needs some includes
+
+Add errno.h and sys/mman.h includes in buf.c for mmap().  The includes
+were left out of 87750d1d ("Use mmap(MAP_ANONYMOUS) to allocate queue
+buffers") by mistake.
+
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ src/buf.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/src/buf.c b/src/buf.c
+index bbaff12..a80bcb1 100644
+--- a/src/buf.c
++++ b/src/buf.c
+@@ -35,6 +35,8 @@
+ #endif /* HAVE_CONFIG_H */
+ 
+ #include <stdlib.h>
++#include <errno.h>
++#include <sys/mman.h>
+ 
+ #include "mlx4.h"
+ 
+-- 
+1.6.5.2
+
